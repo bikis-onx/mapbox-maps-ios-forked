@@ -2,39 +2,34 @@
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
-import Foundation
-
-let coreMaps = MapsDependency.coreMaps(version: "11.11.0-beta.1")
-
-let common = MapsDependency.common(version: "24.11.0-beta.1")
-
-let mapboxMapsPath: String? = nil
 
 let package = Package(
     name: "MapboxMaps",
     defaultLocalization: "en",
-    // Maps SDK doesn't support macOS but declared the minimum macOS requirement with downstream deps to enable `swift run` cli tools
     platforms: [.iOS(.v14), .macOS(.v10_15), .custom("visionos", versionString: "1.0")],
     products: [
         .library(
             name: "MapboxMaps",
-            targets: ["MapboxMaps"]),
+            targets: ["MapboxMaps"]
+        )
     ],
     dependencies: [
-        .package(url: "https://github.com/mapbox/turf-swift.git", exact: "4.0.0"),
-    ] + coreMaps.packageDependencies + common.packageDependencies,
+        .package(url: "https://github.com/bikis-onx/turf-swift.git", exact: "4.0.0"),
+        .package(
+            url: "https://github.com/bikis-onx/mapbox-core-maps-ios.git", exact: "11.11.0-beta.1"),
+        .package(
+            url: "https://github.com/bikis-onx/mapbox-common-ios.git", exact: "24.11.0-beta.1"),
+    ],
     targets: [
         .target(
             name: "MapboxMaps",
             dependencies: [
-                coreMaps.mapsTargetDependencies,
-                common.mapsTargetDependencies,
-                .product(name: "Turf", package: "turf-swift")
+                .product(name: "MapboxCoreMaps", package: "mapbox-core-maps-ios"),
+                .product(name: "MapboxCommon", package: "mapbox-common-ios"),
+                .product(name: "Turf", package: "turf-swift"),
             ],
-            path: mapboxMapsPath,
-            exclude: [
-                "Info.plist",
-            ],
+            path: ".",
+            exclude: ["Info.plist"],
             resources: [
                 .copy("MapboxMaps.json"),
                 .copy("PrivacyInfo.xcprivacy"),
@@ -42,9 +37,7 @@ let package = Package(
         ),
         .testTarget(
             name: "MapboxMapsTests",
-            dependencies: [
-                "MapboxMaps",
-            ],
+            dependencies: ["MapboxMaps"],
             resources: [
                 .copy("MigrationGuide/Fixtures/polygon.geojson"),
                 .copy("Helpers/MapboxAccessToken"),
@@ -63,74 +56,6 @@ let package = Package(
                 .copy("Snapshot/testSnapshotOverlay.png"),
                 .process("Resources/MapInitOptionsTests.xib"),
             ]
-        )
-    ] + coreMaps.packageTargets + common.packageTargets
+        ),
+    ]
 )
-
-struct MapsDependency {
-    init(name: String, version: String, checksum: String? = nil, isSnapshot: Bool?, repositoryName: String, registryProjectName: String, registryFileName: String) {
-        self.name = name
-        self.version = version
-        self.checksum = checksum
-        self.isSnapshot = isSnapshot ?? version.contains("SNAPSHOT")
-
-        self.repositoryName = repositoryName
-        self.registryProjectName = registryProjectName
-        self.registryFileName = registryFileName
-    }
-
-    let name: String
-    let version: String
-    let checksum: String?
-    let isSnapshot: Bool
-
-    let repositoryName: String
-    let registryProjectName: String
-    let registryFileName: String
-
-    static func coreMaps(version: String, checksum: String? = nil, isSnapshot: Bool? = nil) -> MapsDependency {
-        return MapsDependency(name: "MapboxCoreMaps", version: version, checksum: checksum, isSnapshot: isSnapshot,
-                              repositoryName: "mapbox-core-maps-ios",
-                              registryProjectName: "mobile-maps-core",
-                              registryFileName: "MapboxCoreMaps.xcframework-dynamic.zip")
-    }
-
-    static func common(version: String, checksum: String? = nil, isSnapshot: Bool? = nil) -> MapsDependency {
-        return MapsDependency(name: "MapboxCommon", version: version, checksum: checksum, isSnapshot: isSnapshot,
-                              repositoryName: "mapbox-common-ios",
-                              registryProjectName: "mapbox-common",
-                              registryFileName: "MapboxCommon.zip")
-    }
-
-    var packageDependencies: [Package.Dependency] {
-        guard !isSnapshot else { return [] }
-
-        return [
-            .package(url: repositoryURL, exact: Version(stringLiteral: version))
-        ]
-    }
-
-    var packageTargets: [Target] {
-        guard isSnapshot else { return [] }
-
-        return [
-            .binaryTarget(name: name, url: registryURL, checksum: checksum ?? "")
-        ]
-    }
-
-    var mapsTargetDependencies: Target.Dependency {
-        if isSnapshot {
-            return .byName(name: name)
-        } else {
-            return .product(name: name, package: repositoryName)
-        }
-    }
-
-    var repositoryURL: String { return "https://github.com/mapbox/\(repositoryName).git" }
-
-    var registryReleaseFolder: String { isSnapshot ? "snapshots" : "releases" }
-
-    var registryURL: String {
-        return "https://api.mapbox.com/downloads/v2/\(registryProjectName)/\(registryReleaseFolder)/ios/packages/\(version)/\(registryFileName)"
-    }
-}

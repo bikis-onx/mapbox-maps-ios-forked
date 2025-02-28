@@ -3,16 +3,16 @@
     {
       "identity" : "mapbox-common-ios",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mapbox/mapbox-common-ios.git",
+      "location" : "https://github.com/bikis-onx/mapbox-common-ios.git",
       "state" : {
-        "revision" : "407e77a5f9595900c432adb9d6c119af3c8941ed",
+        "revision" : "72a0c0c146a6563a15c9fce7493b41bc7aa354f1",
         "version" : "24.11.0-beta.1"
       }
     },
     {
       "identity" : "mapbox-core-maps-ios",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mapbox/mapbox-core-maps-ios.git",
+      "location" : "https://github.com/bikis-onx/mapbox-core-maps-ios.git",
       "state" : {
         "revision" : "2dea846350c071df46895c8802c70000cdcd5259",
         "version" : "11.11.0-beta.1"
@@ -21,9 +21,9 @@
     {
       "identity" : "turf-swift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mapbox/turf-swift.git",
+      "location" : "https://github.com/bikis-onx/turf-swift.git",
       "state" : {
-        "revision" : "bf840e6b9529d105687840fe2c9dcd74197d46d1",
+        "revision" : "84db5899af1beaa506aafcb006fd7759e7d5647d",
         "version" : "4.0.0"
       }
     }
